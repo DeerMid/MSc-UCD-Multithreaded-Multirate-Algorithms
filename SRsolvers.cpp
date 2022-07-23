@@ -60,50 +60,52 @@ void solHeunSR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
 
 void solRK12SR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(float, float), float relTol, float absTol, int dim) {
 
-	//implementation of the RK12 method with adaptive time step
-	// vector<float> t represents the time vector, containing each time step over the interval
-	// vector <float> y represents the computed values at the corresponding time step
-	// int dim accounts for striding of the y vector
+    //implementation of the RK12 method with adaptive time step
+    // vector<float> t represents the time vector, containing each time step over the interval
+    // vector <float> y represents the computed values at the corresponding time step
+    // int dim accounts for striding of the y vector
 
-	//these constants determine the time step refinement and error bounds
-	const float nu = 0.7;
-	const float hLo = 0.1;
-	const float hHi = 5;
-	float fac = 1.0; //preinitialise 
+    //these constants determine the time step refinement and error bounds
+    const float nu = 0.7;
+    const float hLo = 0.1;
+    const float hHi = 5;
+    float fac = 1.0; //preinitialise
 
-	float t0 = t.back();
-	int count = 0;
+    float t0 = t.back();
+    int count = 0;
 
-	while (t0 < T) {
-		for (int extend = 0; extend < dim; extend++) y.push_back(0.0);
-		for (int i = 0; i < dim; i++) {
-			float k1 = h * f(t0, y[i + (dim * count)]); //compute both components of Heun's
-			float k2 = h * f(t0 + h, y[i + (dim * count)] + k1);
+    while (t0 < T) {
+        for (int extend = 0; extend < dim; extend++) y.push_back(0.0);
+        for (int i = 0; i < dim; i++) {
+            float k1 = h * f(t0, y[i + (dim * count)]); //compute both components of Heun's
+            float k2 = h * f(t0 + h, y[i + (dim * count)] + k1);
 
-			float err = 0.5 * (k1 - k2);
-			err = abs(err); //compute error comparing forward and Heun's
+            float err = 0.5 * (k1 - k2);
+            err = abs(err); //compute error comparing forward and Heun's
 
-			float tolC = relTol * abs(y[i + (dim * count)]) + absTol;
-			float nErr = err / tolC;
+            float tolC = relTol * abs(y[i + (dim * count)]) + absTol;
+            float nErr = err / tolC;
 
-			fac = nu * pow(nErr, -0.5);
+            fac = nu * pow(nErr, -0.5);
 
-			if (nErr > 1.0) { //if the error is too large we rescale the timestep
-				fac = max(hLo, fac);
-				h = fac * h;
-			}
-			else { //otherwise continue
-				y[i + (dim * (count + 1))] = y[i + (dim * count)] + 0.5 * (k1 + k2); //computes and assigns the computation to the next "vertical entry"
-		}
-		t0 = t0 + h;
-		t.push_back(t0);
+            if (nErr > 1.0) { //if the error is too large we rescale the timestep
+                fac = max(hLo, fac);
+                h = fac * h;
+            }
+            else { //otherwise continue
+                y[i + (dim * (count + 1))] = y[i + (dim * count)] + 0.5 * (k1 + k2); //computes and assigns the computation to the next "vertical entry"
+            }
+        }
+        t0 = t0 + h;
+        t.push_back(t0);
 
-		fac = min(hHi, fac); //reset fac
-		h = fac * h;
+        fac = min(hHi, fac); //reset fac
+        h = fac * h;
 
-		if (t0 + h > T) {
-			h = T - t0;
-		}
-		count++; //iterate the count variable to force computations to be conducted on the next row for the following loop
-		}
-	}
+        if (t0 + h > T) {
+            h = T - t0;
+        }
+        count++; //iterate the count variable to force computations to be conducted on the next row for the following loop
+    }
+}
+

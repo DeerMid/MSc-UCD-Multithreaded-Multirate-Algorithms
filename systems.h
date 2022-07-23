@@ -1,3 +1,3 @@
 #pragma once
 
-float linearScalerODE(float t, float y);
+float linearScalarODE(float t, float y);

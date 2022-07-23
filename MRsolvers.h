@@ -13,6 +13,7 @@ struct internalInfo {
 	float h;
 	float ref;
 	float tref;
+	int count = 0;
 };
 
-void solRK12MR(std::vector<float>& t, std::vector<float>& y, float h, float T, float (*f)(float, float), internalInfo inter);
+void solRK12MR(std::vector<float>& t, std::vector<float>& y, float h, float T, float (*f)(float, float), int dim, internalInfo inter);

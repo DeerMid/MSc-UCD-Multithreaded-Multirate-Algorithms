@@ -2,6 +2,7 @@
 #include<vector>
 #include "SRsolvers.h"
 #include "systems.h"
+#include "MRsolvers.h"
 
 using namespace std;
 
@@ -13,7 +14,7 @@ int main() {
 	vector<float> t = { 0.0 };
 	vector<float> y = { 1.0 , 2.0, 3.0};
 	int dim = 3;
-
+	/*
 	solForwardEulerSR(t, y, 0.78, 5, &linearScalerODE, dim); //compute forward Euler
 
 	//print results
@@ -53,6 +54,10 @@ int main() {
 		cout << t.at(i) << "\t" << y.at(i * dim + 2) << endl;
 	}
 
+	*/
+
+	internalInfo inter;
+	solRK12MR(t, y, 0.1, 10, &linearScalarODE, inter);
 
 
 	return 0;
