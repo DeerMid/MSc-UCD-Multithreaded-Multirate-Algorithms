@@ -1,6 +1,7 @@
 #include "MRsolvers.h"
 #include<vector>
 #include<iostream>
+#include<math.h>
 
 using namespace std;
 
@@ -23,9 +24,9 @@ void solRK12MR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
 				float k2 = h * f(t0 + h, y[i + (dim * inter.count)] + k1);
 
 				float err = 0.5 * (k1 - k2);
-				err = abs(err); //compute error comparing forward and Heun's
+				err = fabs(err); //compute error comparing forward and Heun's
 
-				float tolC = relTol * abs(y[i + (dim * inter.count)]) + absTol;
+				float tolC = relTol * fabs(y[i + (dim * inter.count)]) + absTol;
 				float nErr = err / tolC;
 				if (nErrMax < nErr) nErrMax = nErr; //stores the largest error value
 

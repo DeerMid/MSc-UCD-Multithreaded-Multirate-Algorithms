@@ -3,6 +3,8 @@
 
 #include<iostream>
 #include<vector>
+#include<math.h>
+#include "MRsolvers.h"
 
 using namespace std;
 
@@ -26,8 +28,8 @@ void solForwardEulerSR(vector<float>& t, vector<float>& y, float h, float T, flo
 			h = T - t0;
 		}
 		count++; //iterate the count variable to force computations to be conducted on the next row for the following loop
-		}
 	}
+}
 
 
 void solHeunSR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(float, float), int dim) {
@@ -81,9 +83,9 @@ void solRK12SR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
             float k2 = h * f(t0 + h, y[i + (dim * count)] + k1);
 
             float err = 0.5 * (k1 - k2);
-            err = abs(err); //compute error comparing forward and Heun's
+            err = fabs(err); //compute error comparing forward and Heun's
 
-            float tolC = relTol * abs(y[i + (dim * count)]) + absTol;
+            float tolC = relTol * fabs(y[i + (dim * count)]) + absTol;
             float nErr = err / tolC;
 
             fac = nu * pow(nErr, -0.5);
