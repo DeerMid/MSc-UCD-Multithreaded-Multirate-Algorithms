@@ -1,5 +1,5 @@
 #pragma once
-#include<vector>;
+#include<vector>
 
 
 //this is a very rough outline 
@@ -16,4 +16,4 @@ struct internalInfo {
 	int count = 0;
 };
 
-void solRK12MR(std::vector<float>& t, std::vector<float>& y, float h, float T, float (*f)(float, float), int dim, internalInfo inter);
+void solRK12MR(std::vector<float>& t, std::vector<float>& y, float h, float T, float (*f)(float, float), float relTol, float absTol, int dim, internalInfo inter);
