@@ -73,6 +73,17 @@ void solRK12MR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
 			else{
 				if(check > 0){ //this checks if there are components that need refinement
 					float Tin = t0 + h;
+					fac = nu * pow(nErrMax, -0.5);
+					fac = max(hLo, fac);
+					float hin = fac * h;
+
+					//interpolation variables
+					vector<float> yInter;
+					//the following line equates to yInter = y + 0.5 * (k1 + k2) from above
+					//maybe it's more efficient to store the k1 and k2 variables as vectors and recall here
+					for(int i = 0; i < dim; i++) yInter[i] = y[i + (dim * inter.count)] + 0.5 * ((h * f(t0 + h, y[i + (dim * inter.count)]) + (h * f(t0, y[i + (dim * inter.count)])));
+					vector<float> y1nref;
+					for(int i = 0; i < dim; i++) y1nref[i] = yInter[i] * (int) nref[i];
 				}
 			}
 
