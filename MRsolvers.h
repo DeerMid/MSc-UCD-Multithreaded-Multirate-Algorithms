@@ -7,12 +7,11 @@
 
 struct internalInfo {
 	bool internalCheck = false;
-	float y1nref;
-	float t0;
-	float y0;
+	std::vector<float> y1nref;
+	std::vector<float> t0;
+	std::vector<float> y0;
 	float h;
-	float ref;
-	float tref;
+	std::vector<bool> ref;
 	int count = 0;
 };
 
