@@ -28,10 +28,11 @@ void solRK12MR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
 	float t0 = t.back();
 
 	while (t0 < T) {
+	//cout << "while loop check, where t0 is " << t0 << " and T is " << T << endl;
 		if (inter.internalCheck == false) { //we are in the outer loop, global refinement is occuring
-			cout << "Entered outer loop" << endl;	
-			float t0 = t.back();
-			cout << "t0 is " << t0 << endl;
+			//cout << "Entered outer loop" << endl;	
+			t0 = t.back();
+			//cout << "t0 is " << t0 << endl;
 			//begin error bound calculation
 			for (int i = 0; i < dim; i++) {
 				//cout << i << " k1 and k2 calulation " << endl;
@@ -40,12 +41,12 @@ void solRK12MR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
 
 				float err = 0.5 * (k1[i] - k2[i]);
 				err = fabs(err); //compute error comparing forward and Heun's
-				cout << "the error after fabs is " << err << endl;
+				//cout << "the error after fabs is " << err << endl;
 
 				float tolC = relTol * fabs(y[i + (dim * inter.rowCount)]) + absTol;
 				float nErr = err / tolC;
 				nErrVec[i] = nErr; //stores that node's normalised error
-				cout << nErrVec[i] << " is the error here" << endl;
+				//cout << nErrVec[i] << " is the error here" << endl;
 			}
 			//cout << "Completed calculations of k1 and k2 in outer loop" << endl;
 			//check for the maximum error
@@ -68,28 +69,28 @@ void solRK12MR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
 					if(nref_nErrMax < nErrVec[i]) nref_nErrMax = nErrVec[i];
 				}
 			}
-			cout << "nref_nErrMax is " << nref_nErrMax << endl;
+			//cout << "nref_nErrMax is " << nref_nErrMax << endl;
 			
 			//this step determines how "large" the refinement will be, this can probably be improved much further in terms of efficiency
 			int check = 0;
 			for(int i = 0; i < dim; i++) check += ref[i];
-			cout << "the check for this loop is " << check << endl;
+			//cout << "the check for this loop is " << check << endl;
 
 			if(check == dim){ //all components need to be refined
 				fac = nu * pow(nErrMax, -0.5);
 				fac = max(hLo, fac);
 				h = fac * h;
-				cout << "all components need refining" << endl;
+				//cout << "all components need refining" << endl;
 			}
 			else if(nref_nErrMax > 1.0){ //the not to be refined set has an error which is too large and the global step needs repeating with rescaled time-step
 				fac = nu * pow(nref_nErrMax, -0.5);
 				fac = max(hLo, fac);
 				h = fac * h;
-				cout << "global step failed" << endl;
+				//cout << "global step failed" << endl;
 			}
 			else{
 				if(check > 0){ //this checks if there are components that need refinement
-					cout << "Refinement recursion calling" << endl;		
+					//cout << "Refinement recursion calling" << endl;		
 					float Tin = t0 + h; //sets a new truncated integrating endpoint for refinement purposes
 					fac = nu * pow(nErrMax, -0.5);
 					fac = max(hLo, fac);
@@ -117,9 +118,9 @@ void solRK12MR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
 					
 					//recursively call the function for refinement
 					//the check guarantees we enter into the inner refinement stage
-					cout << "recursively calling function" << endl;
+					//cout << "recursively calling function" << endl;
 					solRK12MR(t, y, hin, Tin, f, relTol, absTol, dim, inter); 
-					cout << "finished outer recursion safely" << endl;
+					//cout << "finished outer recursion safely" << endl;
 					t0 = t.back();
 
 					if(t0 + h > T) h = T - t0; 
@@ -127,7 +128,7 @@ void solRK12MR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
 				}
 				//else if the refinement vector is empty then we are good to proceed with appending the solutions
 				else{
-					cout << "outer loop okay, appending and continuing" << endl;
+					//cout << "outer loop okay, appending and continuing" << endl;
 					//initialise an "empty" row onto the y vector (this might not even be necessary)
 					for (int extend = 0; extend < dim; extend++) y.push_back(0.0);
 				
@@ -143,15 +144,15 @@ void solRK12MR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
 					//iterate the rowCount variable to allow for smooth assigning onto the y-vector later
 					inter.rowCount++;
 
-					cout << "t0 is, at the end, " << t0 << endl;
+					//cout << "t0 is, at the end, " << t0 << endl;
 				}			
 			}
-
+		//cout << "end of while loop for global stage" << endl;
 		}
 		//we are in the inner loop and need refinement
 		else {
-			cout << "in the inner refinement loop" << endl;
-			float t0 = t.back();
+			//cout << "in the inner refinement loop" << endl;
+			t0 = t.back();
 	
 			for(int i = 0; i < dim; i++){
 				if(inter.ref[i] == true){

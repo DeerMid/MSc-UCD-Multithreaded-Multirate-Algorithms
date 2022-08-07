@@ -54,11 +54,20 @@ int main() {
 		cout << t.at(i) << "\t" << y.at(i * dim + 2) << endl;
 	}
 
-	
+	cout << "#############################" << endl << endl;
+	cout << "RK12 Multirate Method Results" << endl;
+
+	t = { 0.0 };
+	y = { 1.0 , 2.0, 3.0 };
 
 	internalInfo inter;
-	solRK12MR(t, y, 0.1, 10, &linearScalarODE, 0.1, 0.01, dim, inter);
+	solRK12MR(t, y, 0.78, 5.0, &linearScalarODE, 0.1, 0.01, dim, inter);
 
+	cout << "\nt\ty" << endl;
+	cout << "---------------" << endl;
+	for (int i = 0; i < t.size(); i++) {
+		cout << t.at(i) << "\t" << y.at(i * dim + 2) << endl;
+	}
 
 	return 0;
 }
