@@ -12,7 +12,7 @@ struct internalInfo {
 	std::vector<float> y0;
 	float h;
 	std::vector<bool> ref;
-	int count = 0;
+	int rowCount = 0;
 };
 
 void solRK12MR(std::vector<float>& t, std::vector<float>& y, float h, float T, float (*f)(float, float), float relTol, float absTol, int dim, internalInfo inter);
