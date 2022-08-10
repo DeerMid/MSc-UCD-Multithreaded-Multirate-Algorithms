@@ -16,7 +16,7 @@ void solRK12MR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
 	const float hHiG = 1.0;
 	float fac = 1.0; 
 
-	float nErrMax = 1.0; //preinitialise error maximums
+	float nErrMax = 0.0; //preinitialise error maximums
 	float nref_nErrMax = 0.0;
 
 	//create vectors to contain the components of Heun's method
@@ -121,9 +121,7 @@ void solRK12MR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
 					//cout << "recursively calling function" << endl;
 					solRK12MR(t, y, hin, Tin, f, relTol, absTol, dim, inter); 
 					//cout << "finished outer recursion safely" << endl;
-					t0 = t.back();
-
-					if(t0 + h > T) h = T - t0; 
+					t0 = t.back(); 
 
 				}
 				//else if the refinement vector is empty then we are good to proceed with appending the solutions
@@ -138,8 +136,9 @@ void solRK12MR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
 					}
 
 					//append t
+					t.push_back(t0+h);
 					t0 = t0 + h;
-					t.push_back(t0);									
+					if(t0 + h > T) h = T - t0;									
 					
 					//iterate the rowCount variable to allow for smooth assigning onto the y-vector later
 					inter.rowCount++;
@@ -151,7 +150,7 @@ void solRK12MR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
 		}
 		//we are in the inner loop and need refinement
 		else {
-			//cout << "in the inner refinement loop" << endl;
+			cout << "in the inner refinement loop" << endl;
 			t0 = t.back();
 	
 			for(int i = 0; i < dim; i++){

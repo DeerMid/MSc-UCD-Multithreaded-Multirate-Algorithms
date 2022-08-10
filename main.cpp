@@ -3,71 +3,96 @@
 #include "SRsolvers.h"
 #include "systems.h"
 #include "MRsolvers.h"
+#include<stdlib.h>
 
 using namespace std;
 
 
 
-int main() {
+int main(int argc, char **argv) {
 
-	//initial conditions
-	vector<float> t = { 0.0 };
-	vector<float> y = { 1.0 , 2.0, 3.0};
-	int dim = 3;
-	
-	solForwardEulerSR(t, y, 0.78, 5, &linearScalarODE, dim); //compute forward Euler
+	//default tolerance values
+	const float relTol = 0.1;
+	const float absTol = 0.01;
+	cout.precision(4);
 
-	//print results
-	cout << "Forward Euler Method Results" << endl;
+	//check user input
+	if(argc != 5){
+		
+		cout << "Please input the following arguments when calling the program: Start Time, End Time, Step Size, Dimension" << endl;
+		return 1;
+	}
+	else{
 
-	cout << "\nt\ty" << endl;
-	cout << "---------------" << endl;
-	for (int i = 0; i < t.size(); i++) {
-		cout << t.at(i) << "\t" << y.at(i * dim) << endl; //output the Euler method for the first node point
+		//initial conditions
+		float tStart = atof(argv[1]);
+		vector<float> t = { tStart };
+		vector<float> yRand;
+		float dim = atoi(argv[4]);
+		for(int i = 0; i < dim; i++) yRand.push_back(static_cast <float> (rand()) / static_cast <float> (RAND_MAX/5.0));
+		float h = atof(argv[3]);
+		float T = atof(argv[2]);
+		
+		vector<float> y = yRand;
+		
+		solForwardEulerSR(t, y, h, T, &linearScalarODE, dim); //compute forward Euler
+
+		//print results
+		cout << "Forward Euler Method Results" << endl;
+
+		cout << "\nt\t\ty" << endl;
+		cout << "---------------" << endl;
+		for (int i = 0; i < t.size(); i++) {
+			cout << t.at(i) << "\t\t" << y.at(i * dim) << endl; //output the Euler method for the first node point
+		}
+
+		cout << "#############################" << endl << endl;
+		cout << "Heun Method Results" << endl;
+
+		t = { tStart };
+
+		y = yRand;
+
+		solHeunSR(t, y, h, T, &linearScalarODE, dim); //compute for Heun's method for the second node point
+
+		cout << "\nt\t\ty" << endl;
+		cout << "---------------" << endl;
+		for (int i = 0; i < t.size(); i++) {
+			cout << t.at(i) << "\t\t" << y.at(i * dim + 1) << endl;
+		}
+
+		cout << "#############################" << endl << endl;
+		cout << "RK12 Method Results" << endl;
+
+		t = { tStart };
+
+		y = yRand;
+
+		solRK12SR(t, y, h, T, &linearScalarODE, relTol, absTol, dim); //compute for RK12 method for the third node point
+
+		cout << "\nt\t\ty" << endl;
+		cout << "---------------" << endl;
+		for (int i = 0; i < t.size(); i++) {
+			cout << t.at(i) << "\t\t" << y.at(i * dim + 2) << endl;
+		}
+
+		cout << "#############################" << endl << endl;
+		cout << "RK12 Multirate Method Results" << endl;
+
+		t = { tStart };
+
+		y = yRand;
+
+		internalInfo inter;
+		solRK12MR(t, y, h, T, &linearScalarODE, relTol, absTol, dim, inter);
+
+		cout << "\nt\t\ty" << endl;
+		cout << "---------------" << endl;
+		for (int i = 0; i < t.size(); i++) {
+			cout << t.at(i) << "\t\t" << y.at(i * dim + 2) << endl;
+		}
+
+		return 0;
 	}
 
-	cout << "#############################" << endl << endl;
-	cout << "Heun Method Results" << endl;
-
-	t = { 0.0 };
-	y = { 1.0 , 2.0, 3.0 };
-
-	solHeunSR(t, y, 0.78, 5, &linearScalarODE, dim); //compute for Heun's method for the second node point
-
-	cout << "\nt\ty" << endl;
-	cout << "---------------" << endl;
-	for (int i = 0; i < t.size(); i++) {
-		cout << t.at(i) << "\t" << y.at(i * dim + 1) << endl;
-	}
-
-	cout << "#############################" << endl << endl;
-	cout << "RK12 Method Results" << endl;
-
-	t = { 0.0 };
-	y = { 1.0 , 2.0, 3.0 };
-
-	solRK12SR(t, y, 0.78, 5, &linearScalarODE, 0.1, 0.01, dim); //compute for RK12 method for the third node point
-
-	cout << "\nt\ty" << endl;
-	cout << "---------------" << endl;
-	for (int i = 0; i < t.size(); i++) {
-		cout << t.at(i) << "\t" << y.at(i * dim + 2) << endl;
-	}
-
-	cout << "#############################" << endl << endl;
-	cout << "RK12 Multirate Method Results" << endl;
-
-	t = { 0.0 };
-	y = { 1.0 , 2.0, 3.0 };
-
-	internalInfo inter;
-	solRK12MR(t, y, 0.78, 5.0, &linearScalarODE, 0.1, 0.01, dim, inter);
-
-	cout << "\nt\ty" << endl;
-	cout << "---------------" << endl;
-	for (int i = 0; i < t.size(); i++) {
-		cout << t.at(i) << "\t" << y.at(i * dim + 2) << endl;
-	}
-
-	return 0;
 }

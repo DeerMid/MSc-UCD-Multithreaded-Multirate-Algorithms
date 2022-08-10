@@ -75,39 +75,49 @@ void solRK12SR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
 
     float t0 = t.back();
     int count = 0;
+    float nErrMax = 0.0;
+
+    vector<float> k1 (dim, 0.0);
+    vector<float> k2 (dim, 0.0);
+    vector<float> nErr (dim, 0.0);
 
     while (t0 < T) {
-        for (int extend = 0; extend < dim; extend++) y.push_back(0.0);
         for (int i = 0; i < dim; i++) {
-            float k1 = h * f(t0, y[i + (dim * count)]); //compute both components of Heun's
-            float k2 = h * f(t0 + h, y[i + (dim * count)] + k1);
+            k1[i] = h * f(t0, y[i + (dim * count)]); //compute both components of Heun's
+            k2[i] = h * f(t0 + h, y[i + (dim * count)] + k1[i]);
 
-            float err = 0.5 * (k1 - k2);
+            float err = 0.5 * (k1[i] - k2[i]);
             err = fabs(err); //compute error comparing forward and Heun's
 
             float tolC = relTol * fabs(y[i + (dim * count)]) + absTol;
-            float nErr = err / tolC;
+            nErr[i] = err / tolC;
 
-            fac = nu * pow(nErr, -0.5);
+	} 
 
-            if (nErr > 1.0) { //if the error is too large we rescale the timestep
+	for(int i = 0; i < dim; i++) if(nErrMax < nErr[i]) nErrMax = nErr[i];
+	fac = nu * pow(nErrMax, -0.5);
+
+        if (nErrMax > 1.0) { //if the error is too large we rescale the timestep
                 fac = max(hLo, fac);
                 h = fac * h;
-            }
-            else { //otherwise continue
-                y[i + (dim * (count + 1))] = y[i + (dim * count)] + 0.5 * (k1 + k2); //computes and assigns the computation to the next "vertical entry"
-            }
         }
-        t0 = t0 + h;
-        t.push_back(t0);
+        else { //otherwise continue with appending
+		for (int extend = 0; extend < dim; extend++) y.push_back(0.0);
 
-        fac = min(hHi, fac); //reset fac
-        h = fac * h;
+                for(int i = 0; i < dim; i++) y[i + (dim * (count + 1))] = y[i + (dim * count)] + 0.5 * (k1[i] + k2[i]); //computes and assigns the computation to the next "vertical entry"
+        
+        	t0 = t0 + h;
+        	t.push_back(t0);
 
-        if (t0 + h > T) {
-            h = T - t0;
-        }
-        count++; //iterate the count variable to force computations to be conducted on the next row for the following loop
+        	fac = min(hHi, fac); //reset fac
+        	h = fac * h;
+
+        	if (t0 + h > T) {
+            		h = T - t0;
+        	}
+		count++; //iterate the count variable to force computations to be conducted on the next row for the following loop
+
+	}	
     }
 }
 
