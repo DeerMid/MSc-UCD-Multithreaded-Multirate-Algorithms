@@ -50,8 +50,8 @@ void solHeunSR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
 
 			y[i + (dim * (count + 1))] = y[i + (dim * count)] + 0.5 * (k1 + k2); //computes and assigns the Heun computation to the next "vertical entry" 
 		}
+		t.push_back(t0 + h);
 		t0 = t0 + h;
-		t.push_back(t0);
 
 		if (t0 + h > T) {
 			h = T - t0;
@@ -75,26 +75,24 @@ void solRK12SR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
 
     float t0 = t.back();
     int count = 0;
-    float nErrMax = 0.0;
 
     vector<float> k1 (dim, 0.0);
     vector<float> k2 (dim, 0.0);
     vector<float> nErr (dim, 0.0);
 
     while (t0 < T) {
+	float nErrMax = 0.0;
         for (int i = 0; i < dim; i++) {
             k1[i] = h * f(t0, y[i + (dim * count)]); //compute both components of Heun's
             k2[i] = h * f(t0 + h, y[i + (dim * count)] + k1[i]);
 
             float err = 0.5 * (k1[i] - k2[i]);
             err = fabs(err); //compute error comparing forward and Heun's
-
             float tolC = relTol * fabs(y[i + (dim * count)]) + absTol;
             nErr[i] = err / tolC;
-
 	} 
 
-	for(int i = 0; i < dim; i++) if(nErrMax < nErr[i]) nErrMax = nErr[i];
+	for(int i = 0; i < dim; i++) if(nErrMax < nErr[i]) nErrMax = nErr[i]; 
 	fac = nu * pow(nErrMax, -0.5);
 
         if (nErrMax > 1.0) { //if the error is too large we rescale the timestep

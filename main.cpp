@@ -40,10 +40,10 @@ int main(int argc, char **argv) {
 		//print results
 		cout << "Forward Euler Method Results" << endl;
 
-		cout << "\nt\t\ty" << endl;
+		cout << "\nt\ty" << endl;
 		cout << "---------------" << endl;
 		for (int i = 0; i < t.size(); i++) {
-			cout << t.at(i) << "\t\t" << y.at(i * dim) << endl; //output the Euler method for the first node point
+			cout << t.at(i) << "\t" << y.at(i * dim) << endl; //output the Euler method for the first node point
 		}
 
 		cout << "#############################" << endl << endl;
@@ -55,10 +55,10 @@ int main(int argc, char **argv) {
 
 		solHeunSR(t, y, h, T, &linearScalarODE, dim); //compute for Heun's method for the second node point
 
-		cout << "\nt\t\ty" << endl;
+		cout << "\nt\ty" << endl;
 		cout << "---------------" << endl;
 		for (int i = 0; i < t.size(); i++) {
-			cout << t.at(i) << "\t\t" << y.at(i * dim + 1) << endl;
+			cout << t.at(i) << "\t" << y.at(i * dim + 1) << endl;
 		}
 
 		cout << "#############################" << endl << endl;
@@ -70,10 +70,10 @@ int main(int argc, char **argv) {
 
 		solRK12SR(t, y, h, T, &linearScalarODE, relTol, absTol, dim); //compute for RK12 method for the third node point
 
-		cout << "\nt\t\ty" << endl;
+		cout << "\nt\ty" << endl;
 		cout << "---------------" << endl;
 		for (int i = 0; i < t.size(); i++) {
-			cout << t.at(i) << "\t\t" << y.at(i * dim + 2) << endl;
+			cout << t.at(i) << "\t" << y.at(i * dim + 2) << endl;
 		}
 
 		cout << "#############################" << endl << endl;
@@ -86,10 +86,10 @@ int main(int argc, char **argv) {
 		internalInfo inter;
 		solRK12MR(t, y, h, T, &linearScalarODE, relTol, absTol, dim, inter);
 
-		cout << "\nt\t\ty" << endl;
+		cout << "\nt\ty" << endl;
 		cout << "---------------" << endl;
 		for (int i = 0; i < t.size(); i++) {
-			cout << t.at(i) << "\t\t" << y.at(i * dim + 2) << endl;
+			cout << t.at(i) << "\t" << y.at(i * dim + 2) << endl;
 		}
 
 		return 0;

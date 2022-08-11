@@ -50,6 +50,8 @@ void solRK12MR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
 			}
 			//cout << "Completed calculations of k1 and k2 in outer loop" << endl;
 			//check for the maximum error
+			float nErrMax = 0.0;
+			float nref_nErrMax = 0.0;
 			for(int i = 0; i < dim; i++){
 				if(nErrMax <= nErrVec[i]) nErrMax = nErrVec[i];
 			}
@@ -177,6 +179,8 @@ void solRK12MR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
 				}
 			}
 			//check for the maximum error
+			float nErrMax = 0.0;
+			float nref_nErrMax = 0.0;
 			for(int i = 0; i < dim; i++){
 				if(nErrMax <= nErrVec[i]) nErrMax = nErrVec[i];
 			}
