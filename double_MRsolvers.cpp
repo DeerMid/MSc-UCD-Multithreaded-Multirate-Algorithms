@@ -7,9 +7,6 @@ using namespace std;
 
 void solRK12MR(vector<double>& t, vector<double>& y, double h, double T, void (*f)(double, vector<double>&, int, int, vector<double>&, vector<bool>&), double relTol, double absTol, int dim, internalInfo &inter, int &rowCount) {
 
-	//cout << "t = " <<  t.back() << endl << "y = ";
-	//for(int i = 0; i < dim * rowCount; i++) cout << y[i] << ", ";
-	//cout << endl; 
 	//these constants determine the time step refinement and error bounds
 	const double nu = 0.7;
 	const double hLo = 0.1;
@@ -31,44 +28,29 @@ void solRK12MR(vector<double>& t, vector<double>& y, double h, double T, void (*
 	double t0 = t.back();
 
 	while (t0 < T) {
-	//cout << "while loop check, where t0 is " << t0 << " and T is " << T << endl;
 		if (inter.internalCheck == false) { //we are in the outer loop, global refinement is occuring
-			//cout << "Entered outer loop" << endl;	
-			//cout << "t = " <<  t.back() << endl << "y = ";
-			//for(int i = 0; i < dim * rowCount; i++) cout << y[i] << ", ";
-			//cout << endl; 
 
 			t0 = t.back();
-			//cout << "t0 is " << t0 << endl;
+
 			//begin error bound calculation
 			vector<bool> dumRef (dim, true);
 			f(t0, y, dim, rowCount, k1, dumRef); //compute both components of Heun's
 			for(int i = 0; i < dim; i++) k1[i] = k1[i] * h;
-			//cout << "h is: " << h << endl;
-			//for(int i = 0; i < dim; i++) cout << "k1[" << i << "] = " << k1[i] << ", ";
-			//cout << endl;
 			vector<double> k2temp (dim, 0.0);
 			for(int i = 0; i < dim; i++) k2temp[i] = y[i + (dim * rowCount)] + k1[i];
-			//for(int i = 0; i < dim; i++) cout << "k2temp[" << i << "] = " << k2temp[i] << ", ";
-			//cout << endl;
-
 			f(t0 + h, k2temp, dim, 0, k2, dumRef);
 			for(int i = 0; i < dim; i++) k2[i] = h * k2[i];
-			//for(int i = 0; i < dim; i++) cout << "k2[" << i << "] = " << k2[i] << ", ";
-			//cout << endl;
 
 			
 			for(int i = 0; i < dim; i++){
 				double err = 0.5 * (k2[i] - k1[i]);
-				err = fabs(err); //compute error comparing forward and Heun's
-				//cout << "the error after fabs is " << err << endl;
+				err = fabs(err); //compute error comparing forward and Heun
 
 				double tolC = relTol * fabs(y[i + (dim * rowCount)]) + absTol;
 				double nErr = err / tolC;
 				nErrVec[i] = nErr; //stores that node's normalised error
-				//cout << nErrVec[i] << " is the error here" << endl;
 			}
-			//cout << "Completed calculations of k1 and k2 in outer loop" << endl;
+
 			//check for the maximum error
 			double nErrMax = 0.0;
 			double nref_nErrMax = 0.0;
@@ -91,28 +73,23 @@ void solRK12MR(vector<double>& t, vector<double>& y, double h, double T, void (*
 					if(nref_nErrMax < nErrVec[i]) nref_nErrMax = nErrVec[i];
 		}
 			}
-			//cout << "nref_nErrMax is " << nref_nErrMax << endl;
 			
 			//this step determines how "large" the refinement will be, this can probably be improved much further in terms of efficiency
 			int check = 0;
 			for(int i = 0; i < dim; i++) check += ref[i];
-			//cout << "the check for this loop is " << check << endl;
 
 			if(check == dim){ //all components need to be refined
 				fac = nu * pow(nErrMax, -0.5);
 				fac = max(hLo, fac);
 				h = fac * h;
-				//cout << "all components need refining" << endl;
 			}
 			else if(nref_nErrMax > 1.0){ //the not to be refined set has an error which is too large and the global step needs repeating with rescaled time-step
 				fac = nu * pow(nref_nErrMax, -0.5);
 				fac = max(hLo, fac);
 				h = fac * h;
-				//cout << "global step failed" << endl;
 			}
 			else{
-				if(check > 0){ //this checks if there are components that need refinement
-					//cout << "Refinement recursion calling" << endl;		
+				if(check > 0){ //this checks if there are components that need refinement		
 					double Tin = t0 + h; //sets a new truncated integrating endpoint for refinement purposes
 					fac = nu * pow(nErrMax, -0.5);
 					fac = max(hLo, fac);
@@ -134,26 +111,20 @@ void solRK12MR(vector<double>& t, vector<double>& y, double h, double T, void (*
 					inter.y0 = y;
 					inter.h = h;
 					inter.ref = ref;
+					inter.OLDrowCount = rowCount;
 					
 					//we need internal refinements so set the check as true
 					inter.internalCheck = true;
 					
 					//recursively call the function for refinement
 					//the check guarantees we enter into the inner refinement stage
-					//cout << "recursively calling function" << endl;
-					//cout << "h is " << h << " and t is " << t.back() << " with the y value being " << y[2 + (dim *inter.rowCount)] << " before the recursive call in the outer loop-------------------------------------" << endl << endl;
 					solRK12MR(t, y, hin, Tin, f, relTol, absTol, dim, inter, rowCount);
-					//cout << "exited refinement stage" << endl;
-					//cout << "h is " << h << " and t is " << t.back() << " with the y value being " << y[2 + (dim *inter.rowCount)] << "after the recursive call in the outer loop" <<  endl << endl; 
+
 					inter.internalCheck = false;
-					//cout << "finished outer recursion safely" << endl;
-					t0 = t.back(); 
-					//cout << "t0 is " << t0 << " after reassignment using .back()" << endl;
 
 				}
 				//else if the refinement vector is empty then we are good to proceed with appending the solutions
 				else{
-					//cout << "outer loop okay, appending and continuing" << endl;
 					//initialise an "empty" row onto the y vector (this might not even be necessary)
 					for (int extend = 0; extend < dim; extend++) y.push_back(0.0);
 				
@@ -161,8 +132,6 @@ void solRK12MR(vector<double>& t, vector<double>& y, double h, double T, void (*
 					for(int i = 0; i < dim; i++){ 
 						y[i + (dim * (rowCount + 1))] = y[i + (dim * rowCount)] + 0.5 * (k1[i] + k2[i]);
 					}
-					
-					//cout << "h is " << h << " and t is " << t.back() << " with the y value being " << y[2 + (dim *rowCount)] << " after assignment in the outer loop" <<  endl << endl;
 
 					//append t
 					t.push_back(t0+h);
@@ -173,34 +142,22 @@ void solRK12MR(vector<double>& t, vector<double>& y, double h, double T, void (*
 					if(t0 + h > T) h = T - t0;									
 					
 					//iterate the rowCount variable to allow for smooth assigning onto the y-vector later
-					//cout << "The row count before incrementing is: " << inter.rowCount << endl;
 					rowCount++;
-					//cout << "The row count after incrementing is: " << inter.rowCount  << endl;
 
-					//cout << "t0 is, at the end, of the global stage " << t0 << endl;
 				}			
 			}
-		//cout << "t = " <<  t.back() << endl << "y = ";
-		//for(int i = 0; i < dim * rowCount; i++) cout << y[i] << ", ";
-		//cout << endl; 
-
-		//cout << "end of while loop for global stage" << endl;
 		}
 		//we are in the inner loop and need refinement
 		else {
-			//cout << "t = " <<  t.back() << endl << "y = ";
-			//for(int i = 0; i < dim * rowCount; i++) cout << y[i] << ", ";
-			//cout << endl; 
-
-			cout << endl << "in the inner refinement loop: here t0 is " << t0 << " and Tin is " << T << " with h being " << h << endl;
 			t0 = t.back();
 	
 			//for nodes that need refinement compute both components of Heun's
 			vector<double> k1 (dim, 0.0);
 			f(t0, y, dim, rowCount, k1, inter.ref); //compute both components of Heun's
 			for(int i = 0; i < dim; i++) k1[i] = k1[i] * h;
+
 			vector<double> k2temp (dim, 0.0);
-			for(int i = 0; i < dim; i++) k2temp[i] = (inter.ref[i] == true) ?  y[i + (dim * rowCount)] + k1[i] : inter.y0[i + (dim *rowCount)] + ((t0+h) - inter.t0.back())*(inter.y1nref[i] - inter.y0[i + (dim * rowCount)])/inter.h;
+			for(int i = 0; i < dim; i++) k2temp[i] = (inter.ref[i] == true) ?  y[i + (dim * rowCount)] + k1[i] : inter.y0[i + (dim *inter.OLDrowCount)] + ((t0+h) - inter.t0.back())*(inter.y1nref[i] - inter.y0[i + (dim * inter.OLDrowCount)])/inter.h;
 			f(t0 + h, k2temp, dim, 0, k2, inter.ref);
 			for(int i = 0; i < dim; i++) k2[i] = h * k2[i];
 		
@@ -272,29 +229,23 @@ void solRK12MR(vector<double>& t, vector<double>& y, double h, double T, void (*
 
 						}
 						else if(inter.ref[i] == false){
-							y1nref[i] += ((Tin) - inter.t0.back())*(inter.y1nref[i] - inter.y0[i + (dim * rowCount)])/inter.h;
+							y1nref[i] += ((Tin) - inter.t0.back())*(inter.y1nref[i] - inter.y0[i + (dim * inter.OLDrowCount)])/inter.h;
 						}
 					}
-					
 
-					//tref may be needed here
+					internalInfo inter1;
 
-					inter.y1nref = y1nref;
-					inter.t0 = t;
-					inter.y0 = y;
-					inter.h = h;
-					inter.ref = ref;
+					inter1.y1nref = y1nref;
+					inter1.t0 = t;
+					inter1.y0 = y;
+					inter1.h = h;
+					inter1.ref = ref;
+					inter1.OLDrowCount = rowCount;
 
-					inter.internalCheck = true;
+					inter1.internalCheck = true;
 					
 					//we recursively call the function
-					//cout << "calling recursively on inner loop" << endl;
-					//cout << "h is " << h << " and t is " << t.back() << " with the y value being " << y[2 + (dim *inter.rowCount)] << " before recursion in the inner loop" <<  endl << endl;
-					cout << "We are refining the refinement with t0 as " << t0 << " and hin as " <<  hin << " and Tin as " << Tin << endl;
-					solRK12MR(t, y, hin, Tin, f, relTol, absTol, dim, inter, rowCount);
-					cout << "We are now finished with the refining of the refinement" << endl;
-					//cout << "finished inner recursion" << endl;
-					//cout << "h is " << h << " and t is " << t.back() << " with the y value being " << y[2 + (dim *inter.rowCount)] << " after recursion in the inner loop" << endl << endl;
+					solRK12MR(t, y, hin, Tin, f, relTol, absTol, dim, inter1, rowCount);
 					fac = nu * pow(nref_nErrMax , -0.5);
 					fac = min(hHi, fac);
 					h = fac * h;
@@ -313,33 +264,22 @@ void solRK12MR(vector<double>& t, vector<double>& y, double h, double T, void (*
 							y[i + (dim * (rowCount + 1))] = y[i + (dim * rowCount)] + 0.5 * (k1[i] + k2[i]);
 						}
 						else{
-							y[i + (dim * (rowCount + 1))] = inter.y0[i+(dim*rowCount)] + ((t0 + h) - inter.t0.back())*(inter.y1nref[i] - inter.y0[i + (dim * rowCount)])/inter.h;
+							y[i + (dim * (rowCount + 1))] = inter.y0[i+(dim*inter.OLDrowCount)] + ((t0 + h) - inter.t0.back())*(inter.y1nref[i] - inter.y0[i + (dim * inter.OLDrowCount)])/inter.h;
 						}
 					}
-					//cout << "h is " << h << " and t is " << t.back() << " with the y value being " << y[2 + (dim *inter.rowCount)] << " after pure assignment in the inner loop" << endl << endl;
 					//append t
 					t0 = t0 + h;
 					t.push_back(t0);
 
-					fac = nuG * pow(nErrMax, -0.5);
-					fac = min(hHiG, fac);
+					fac = nu * pow(nErrMax, -0.5);
+					fac = min(hHi, fac);
 					h = fac * h;
 
 					if(t0 + h > T) h = T - t0;									
 					
-					//cout << "The row count before incrementing (recursion) is: " << inter.rowCount << endl;
 					rowCount++;
-					//cout << "The row count after incrementing (recursion) is: " << inter.rowCount  << endl;
-
-
-					//inter.internalCheck = false; //set it so we continue in the outer refinement loop
-					//cout << "t0 at the end of the inner refinement is " << t0 << endl;
 				}
-			}
-			//cout << "t = " <<  t.back() << endl << "y = ";
-			//for(int i = 0; i < dim * rowCount; i++) cout << y[i] << ", ";
-			//cout << endl; 
-
+			} 
 		}
 	}
 }

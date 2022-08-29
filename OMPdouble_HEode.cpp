@@ -2,6 +2,7 @@
 #include<vector>
 #include<math.h>
 #include<iostream>
+#include<omp.h>
 
 using namespace std;
 
@@ -18,7 +19,7 @@ void HEode(double t0, vector<double>& y, int dim,int row, vector<double>& ans, v
 	yCopy.push_back(0.0);
 
 	double dx = 1.0/dim;
-
+	#pragma omp parallel for
 	for(int i = 0; i < dim; i++){
 		ans[i] = (ref[i] == true) ?  k * (yCopy[i+2] - 2*yCopy[i+1] + yCopy[i])/(pow(dx, 2)) : 0.0;
 	}
@@ -39,7 +40,7 @@ void HEodeNOREF(double t0, vector<double>& y, int dim, int row, vector<double>& 
 	yCopy.push_back(0.0);
 
 	double dx = 1.0/dim;
-
+	#pragma omp parallel for
 	for(int i = 0; i < dim; i++){
 		ans[i] = yCopy[i+2] - 2*yCopy[i+1] + yCopy[i]/(pow(dx, 2));
 	}

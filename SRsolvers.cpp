@@ -1,10 +1,9 @@
 //this file contains implementations of the singlerate **single-dimension** solvers in C++
 
-
+#include "SRsolvers.h"
 #include<iostream>
 #include<vector>
 #include<math.h>
-#include "MRsolvers.h"
 
 using namespace std;
 
@@ -60,7 +59,7 @@ void solHeunSR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
 	}
 }
 
-void solRK12SR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(float, float), float relTol, float absTol, int dim) {
+void solRK12SR(vector<double>& t, vector<double>& y, double h, double T, void (*f)(double, vector<double>&, int, int, vector<double>&, vector<bool>&), double relTol, double absTol, int dim) {
 
     //implementation of the RK12 method with adaptive time step
     // vector<float> t represents the time vector, containing each time step over the interval
@@ -68,31 +67,39 @@ void solRK12SR(vector<float>& t, vector<float>& y, float h, float T, float (*f)(
     // int dim accounts for striding of the y vector
 
     //these constants determine the time step refinement and error bounds
-    const float nu = 0.7;
-    const float hLo = 0.1;
-    const float hHi = 5;
-    float fac = 1.0; //preinitialise
+    const double nu = 0.7;
+    const double hLo = 0.1;
+    const double hHi = 5;
+    double fac = 1.0; //preinitialise
 
-    float t0 = t.back();
+    double t0 = t.back();
     int count = 0;
 
-    vector<float> k1 (dim, 0.0);
-    vector<float> k2 (dim, 0.0);
-    vector<float> nErr (dim, 0.0);
+    vector<double> k1 (dim, 0.0);
+    vector<double> k2 (dim, 0.0);
+    vector<double> nErrVec (dim, 0.0);
+    vector<bool> dumRef (dim, true);
 
     while (t0 < T) {
-	float nErrMax = 0.0;
+	double nErrMax = 0.0;
         for (int i = 0; i < dim; i++) {
-            k1[i] = h * f(t0, y[i + (dim * count)]); //compute both components of Heun's
-            k2[i] = h * f(t0 + h, y[i + (dim * count)] + k1[i]);
+		vector<bool> dumRef (dim, true);
+                f(t0, y, dim, count, k1, dumRef); //compute both components of Heun's
+                for(int i = 0; i < dim; i++) k1[i] = k1[i] * h;
+		vector<double> k2temp (dim, 0.0);
+                for(int i = 0; i < dim; i++) k2temp[i] = y[i + (dim * count)] + k1[i];
+                f(t0 + h, k2temp, dim, 0, k2, dumRef);
+                for(int i = 0; i < dim; i++) k2[i] = h * k2[i];
+	}
+	for(int i = 0; i < dim; i++){
+        	double err = 0.5 * (k2[i] - k1[i]);
+                err = fabs(err); //compute error comparing forward and Heun
 
-            float err = 0.5 * (k1[i] - k2[i]);
-            err = fabs(err); //compute error comparing forward and Heun's
-            float tolC = relTol * fabs(y[i + (dim * count)]) + absTol;
-            nErr[i] = err / tolC;
-	} 
-
-	for(int i = 0; i < dim; i++) if(nErrMax < nErr[i]) nErrMax = nErr[i]; 
+                double tolC = relTol * fabs(y[i + (dim * count)]) + absTol;
+                double nErr = err / tolC;
+                nErrVec[i] = nErr; //stores that node's normalised error
+	}
+	for(int i = 0; i < dim; i++) if(nErrMax < nErrVec[i]) nErrMax = nErrVec[i]; 
 	fac = nu * pow(nErrMax, -0.5);
 
         if (nErrMax > 1.0) { //if the error is too large we rescale the timestep

@@ -1,6 +1,6 @@
 #include<iostream>
 #include<vector>
-#include "double_HEode.h"
+#include "OMPdouble_HEode.h"
 #include "double_MRsolvers.h"
 #include "SRsolvers.h"
 #include<stdlib.h>
@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
 		for (int i = 0; i < t.size(); i++) {
 			cout << t.at(i) << "\t" << y.at(i * dim) << endl;
 		}
-
+		
 		
 		cout << "\nt\ty[1]" << endl;
 		cout << "---------------" << endl;
@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
 		//cout << endl << "Row count is: " << rowCount << endl;
 		cout << "the size of t is " << t.size() << endl;	
 		*/
-		cout << "Finished with the singlethreaded version" << endl;
+		cout << "Finished with the multithreaded version" << endl;
 		return 0;
 	}
 
